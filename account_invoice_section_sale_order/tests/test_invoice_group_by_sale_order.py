@@ -87,7 +87,7 @@ class TestInvoiceGroupBySaleOrder(SavepointCase):
         cls.order2_p1.action_confirm()
 
     def test_create_invoice(self):
-        """ Check invoice is generated  with sale order sections."""
+        """Check invoice is generated  with sale order sections."""
         result = {
             10: (
                 "".join([self.order1_p1.name, " - ", self.order1_p1.client_order_ref]),
@@ -108,6 +108,13 @@ class TestInvoiceGroupBySaleOrder(SavepointCase):
         for line in lines:
             self.assertEqual(line.name, result[line.sequence][0])
             self.assertEqual(line.display_type, result[line.sequence][1])
+
+    def test_create_invoice_with_default_journal(self):
+        """Using a specific journal for the invoice should not be broken"""
+        journal = self.env["account.journal"].search([("type", "=", "sale")], limit=1)
+        (self.order1_p1 + self.order2_p1).with_context(
+            default_journal_id=journal.id
+        )._create_invoices()
 
     def test_create_invoice_no_section(self):
         """Check invoice for only one sale order
